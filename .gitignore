@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+.venv
+venv/
+ENV/
+env/
+.pytest_cache/
+
+# Node
+node_modules/
+.next/
+dist/
+out/
+build/
+.DS_Store
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+postgres_data/
+
+# Debug & Temporary
+debug_db.py
+Screenshot *.png
+Gemini_Generated_Image_*.png
+*.log
+
+# IDE
+.vscode/
+.idea/
