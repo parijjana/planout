@@ -123,8 +123,13 @@ export default function CreatePlanModal({ onClose, onCreated, onOpenSettings, ex
                             onCreated(planId);
                         }
                     } else {
-                        alert("AI request failed. Plan created successfully.");
-                        onCreated(planId);
+                        const err = await aiRes.text();
+                        try {
+                            const errJson = JSON.parse(err);
+                            alert(`AI Request Failed: ${errJson.detail || err}`);
+                        } catch {
+                            alert(`AI Request Failed: ${err}`);
+                        }
                     }
                 } else {
                     onCreated(planId);

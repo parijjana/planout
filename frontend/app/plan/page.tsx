@@ -52,6 +52,7 @@ function PlanViewContent() {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/plans/${id}/suggest`, { method: 'POST' });
             if (res.ok) {
                 const data: any[] = await res.json();
+                // ... (mapping logic)
                 const mapped: Chunk[] = data.map(d => ({
                     id: Math.random().toString(),
                     title: d.title,
@@ -65,9 +66,17 @@ function PlanViewContent() {
                 const allIdx = new Set(mapped.map((_, i) => i));
                 setSelectedIndices(allIdx);
                 setShowAIModal(true);
+            } else {
+                const err = await res.text();
+                try {
+                    const errJson = JSON.parse(err);
+                    alert(`AI Request Failed: ${errJson.detail || err}`);
+                } catch {
+                    alert(`AI Request Failed: ${err}`);
+                }
             }
         } catch (err) {
-            alert("Failed to get suggestions");
+            alert(`Failed to get suggestions: ${err}`);
         } finally {
             setLoadingAI(false);
         }

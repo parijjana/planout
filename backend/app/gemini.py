@@ -75,47 +75,44 @@ def generate_plan_suggestions(plan_title: str, plan_description: str, plan_deadl
     ]
     """
 
-    try:
-        text = _generate_with_retry(prompt, api_key=api_key)
-        text = text.replace("```json", "").replace("```", "").strip()
-        tasks = json.loads(text)
+    # try: (REMOVED: Let exception propagate so main.py catches it)
+    text = _generate_with_retry(prompt, api_key=api_key)
+    text = text.replace("```json", "").replace("```", "").strip()
+    tasks = json.loads(text)
+    
+    # Post-processing: Calculate deadlines if missing
+    from datetime import datetime, timedelta
+    now = datetime.now()
+    
+    for task in tasks:
+        # Map estimated_total_hours to estimated_hours for frontend compatibility if needed
+        task['estimated_hours'] = task.get('estimated_total_hours', task.get('estimated_hours', 5))
         
-        # Post-processing: Calculate deadlines if missing
-        from datetime import datetime, timedelta
-        now = datetime.now()
-        
-        for task in tasks:
-            # Map estimated_total_hours to estimated_hours for frontend compatibility if needed
-            task['estimated_hours'] = task.get('estimated_total_hours', task.get('estimated_hours', 5))
-            
-            if not task.get('deadline'):
-                try:
-                    total_hours = float(task['estimated_hours'])
-                    session_min = int(task.get('duration_minutes', 60))
-                    freq = task.get('frequency', 'Daily')
-                    
-                    if session_min <= 0: session_min = 60
-                    session_hours = session_min / 60.0
-                    
-                    sessions_needed = total_hours / session_hours
-                    
-                    # Multipliers (Days)
-                    multiplier = 1
-                    if freq == 'Weekly': multiplier = 7
-                    elif freq == 'Monthly': multiplier = 30
-                    elif freq == 'Once': multiplier = 1 
-                    
-                    total_days = sessions_needed * multiplier
-                    
-                    calc_deadline = now + timedelta(days=int(total_days))
-                    task['deadline'] = calc_deadline.strftime("%Y-%m-%d")
-                except Exception as e:
-                    print(f"Error calculating deadline for task {task.get('title')}: {e}")
+        if not task.get('deadline'):
+            try:
+                total_hours = float(task['estimated_hours'])
+                session_min = int(task.get('duration_minutes', 60))
+                freq = task.get('frequency', 'Daily')
+                
+                if session_min <= 0: session_min = 60
+                session_hours = session_min / 60.0
+                
+                sessions_needed = total_hours / session_hours
+                
+                # Multipliers (Days)
+                multiplier = 1
+                if freq == 'Weekly': multiplier = 7
+                elif freq == 'Monthly': multiplier = 30
+                elif freq == 'Once': multiplier = 1 
+                
+                total_days = sessions_needed * multiplier
+                
+                calc_deadline = now + timedelta(days=int(total_days))
+                task['deadline'] = calc_deadline.strftime("%Y-%m-%d")
+            except Exception as e:
+                print(f"Error calculating deadline for task {task.get('title')}: {e}")
 
-        return tasks
-    except Exception as e:
-        print(f"Gemini Error (All models): {e}")
-        return []
+    return tasks
 
 def generate_chunk_details(chunk_title: str, api_key: Optional[str] = None) -> dict:
     prompt = f"""
