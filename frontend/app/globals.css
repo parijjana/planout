@@ -1,0 +1,135 @@
+:root {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --card-bg: #1e293b;
+  --primary: #3b82f6;
+  --secondary: #64748b;
+  --accent: #8b5cf6;
+  --success: #10b981;
+  --glass: rgba(30, 41, 59, 0.7);
+  --border: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='light'] {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card-bg: #ffffff;
+  --primary: #3b82f6;
+  --secondary: #64748b;
+  --accent: #8b5cf6;
+  --glass: rgba(255, 255, 255, 0.8);
+  --border: #e2e8f0;
+}
+
+[data-theme='red-white'] {
+  --background: #ffffff;
+  --foreground: #000000;
+  --card-bg: #fff1f2;
+  --primary: #e11d48;
+  --secondary: #9ca3af;
+  --accent: #000000;
+  --glass: rgba(255, 255, 255, 0.95);
+  --border: #e11d48;
+}
+
+[data-theme='paper'] {
+  --background: #fefce8;
+  --foreground: #451a03;
+  --card-bg: #fffbeb;
+  --primary: #b45309;
+  --secondary: #78350f;
+  --accent: #1e40af;
+  --glass: rgba(255, 251, 235, 0.9);
+  --border: rgba(120, 53, 15, 0.2);
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  min-height: 100vh;
+  background: var(--background);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Utilities */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.btn {
+  background: var(--primary);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.input {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  padding: 0.75rem;
+  border-radius: 8px;
+  width: 100%;
+  outline: none;
+  font-size: 1rem;
+}
+
+.input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.input-field {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  padding: 0.75rem;
+  border-radius: 8px;
+  width: 100%;
+  outline: none;
+  font-size: 1rem;
+}
+
+.input-field:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.card {
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
