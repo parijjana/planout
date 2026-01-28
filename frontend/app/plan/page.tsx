@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { Plan, Chunk } from '../../types';
-import CalendarView from '../../components/CalendarView';
-import HorizontalTimeline from '../../components/HorizontalTimeline';
-import EditTaskModal from '../../components/EditTaskModal';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Plan, Chunk } from '../types';
+import CalendarView from '../components/CalendarView';
+import HorizontalTimeline from '../components/HorizontalTimeline';
+import EditTaskModal from '../components/EditTaskModal';
 
-export default function PlanView() {
-    const params = useParams();
-    const id = params?.id as string;
+function PlanViewContent() {
+    const searchParams = useSearchParams();
+    const id = searchParams.get('id');
 
     const [plan, setPlan] = useState<Plan | null>(null);
     const [viewMode, setViewMode] = useState<'timeline' | 'calendar' | 'board'>('timeline');
@@ -24,6 +24,7 @@ export default function PlanView() {
     const [editingChunk, setEditingChunk] = useState<Chunk | null>(null);
 
     const fetchPlan = async () => {
+        if (!id) return;
         const res = await fetch(`http://localhost:8000/plans/${id}`);
         if (res.ok) {
             const data = await res.json();
@@ -36,7 +37,7 @@ export default function PlanView() {
     }, [id]);
 
     const triggerBreakdown = async () => {
-        if (!plan) return;
+        if (!plan || !id) return;
         const res = await fetch(`http://localhost:8000/plans/${id}/breakdown`, { method: 'POST' });
         if (res.ok) {
             const data = await res.json();
@@ -45,6 +46,7 @@ export default function PlanView() {
     };
 
     const askAI = async () => {
+        if (!id) return;
         setLoadingAI(true);
         try {
             const res = await fetch(`http://localhost:8000/plans/${id}/suggest`, { method: 'POST' });
@@ -79,6 +81,7 @@ export default function PlanView() {
     };
 
     const applySuggestions = async () => {
+        if (!id) return;
         const toAdd = suggestions.filter((_, i) => selectedIndices.has(i));
         await fetch(`http://localhost:8000/plans/${id}/chunks`, {
             method: 'POST',
@@ -106,11 +109,13 @@ export default function PlanView() {
             setPlan({ ...plan, chunks: updatedChunks });
         }
 
-        await fetch(`http://localhost:8000/plans/${id}/chunks/${chunkId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status })
-        });
+        if (id) {
+            await fetch(`http://localhost:8000/plans/${id}/chunks/${chunkId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+        }
     };
 
     const onDragOver = (e: React.DragEvent) => {
@@ -119,7 +124,7 @@ export default function PlanView() {
 
     // Handle Edit Save
     const saveTaskEdit = async (chunkId: string, updates: Partial<Chunk>) => {
-        if (!plan) return;
+        if (!plan || !id) return;
 
         // Optimistic
         const updatedChunks = plan.chunks.map(c => c.id === chunkId ? { ...c, ...updates } : c);
@@ -132,7 +137,8 @@ export default function PlanView() {
         });
     };
 
-    if (!plan) return <div className="container">Loading...</div>;
+    if (!id) return <div className="container">Invalid Plan ID</div>;
+    if (!plan) return <div className="container">Loading Plan...</div>;
 
     const todo = plan.chunks.filter(c => c.status === 'TODO');
     const doing = plan.chunks.filter(c => c.status === 'IN_PROGRESS');
@@ -192,11 +198,6 @@ export default function PlanView() {
                     <button className="btn" onClick={triggerBreakdown}>Auto-Breakdown Plan</button>
                 </div>
             )}
-
-            {/* Pass onEdit handlers? Actually the components don't emit clicks yet. 
-                For prototype, let's just make the Board view items clickable for now 
-                as modifying the complex components is risky in one shot. 
-            */}
 
             {viewMode === 'timeline' && <HorizontalTimeline chunks={plan.chunks} planColor={plan.color} />}
             {viewMode === 'calendar' && <CalendarView chunks={plan.chunks} />}
@@ -266,6 +267,14 @@ export default function PlanView() {
                 </div>
             )}
         </div>
+    );
+}
+
+export default function PlanView() {
+    return (
+        <Suspense fallback={<div className="container">Loading Plan...</div>}>
+            <PlanViewContent />
+        </Suspense>
     );
 }
 

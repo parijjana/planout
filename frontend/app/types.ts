@@ -2,7 +2,7 @@ export interface Chunk {
     id: string;
     title: string;
     description?: string;
-    status: 'TODO' | 'IN_PROGRESS' | 'DONE';
+    status: 'TODO' | 'IN_PROGRESS' | 'DONE' | 'SKIPPED' | 'DEFERRED';
     estimated_hours: number;
     duration_minutes?: number;
     frequency?: 'Once' | 'Daily' | 'Weekly' | 'Monthly';

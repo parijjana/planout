@@ -86,6 +86,17 @@ export default function ViewPlanModal({ plan, onClose, onLaunchCalendar, onPlanU
 
     // ... (Handlers) ...
 
+    // Stubs for EditTaskModal handlers to fix build error
+    const handleSaveTask = async (data: any) => {
+        alert("Editing from View Mode is currently read-only in this demo. Please use the Plan Manager.");
+        setShowEditModal(false);
+    };
+
+    const handleDeleteTask = async (id: string) => {
+        alert("Deleting from View Mode is currently read-only in this demo.");
+        setShowEditModal(false);
+    };
+
     return (
         <div style={{
             position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,

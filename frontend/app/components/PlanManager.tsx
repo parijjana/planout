@@ -278,7 +278,7 @@ export default function PlanManager({ planId, initialFocusTaskId, initialViewMod
             newHistory.skipped = (newHistory.skipped || []).filter(d => d !== targetStr);
 
             // 2. Revert Deadline (Subtract 1 occurrence)
-            let newDeadline = chunk.deadline ? new Date(chunk.deadline) : new Date(chunk.scheduled_date);
+            let newDeadline = chunk.deadline ? new Date(chunk.deadline) : (chunk.scheduled_date ? new Date(chunk.scheduled_date) : new Date());
             if (chunk.frequency === 'Daily') newDeadline.setDate(newDeadline.getDate() - 1);
             else if (chunk.frequency === 'Weekly') newDeadline.setDate(newDeadline.getDate() - 7);
             else if (chunk.frequency === 'Monthly') newDeadline.setMonth(newDeadline.getMonth() - 1);
