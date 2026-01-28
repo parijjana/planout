@@ -13,7 +13,8 @@ if DEFAULT_API_KEY:
     genai.configure(api_key=DEFAULT_API_KEY)
 
 # Models to try in order of preference (Free/Fast -> Paid/Powerful)
-MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"]
+# Models to try in order of preference (Free/Fast -> Paid/Powerful)
+MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-2.0-flash-001", "gemini-flash-latest"]
 
 def is_configured() -> bool:
     return bool(DEFAULT_API_KEY)
