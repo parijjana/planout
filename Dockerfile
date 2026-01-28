@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y curl gnupg \
 WORKDIR /app
 
 # --- Frontend Build ---
-COPY frontend/package*.json ./frontend/
 WORKDIR /app/frontend
+COPY frontend/package.json frontend/package-lock.json ./
 # Use npm install which is more robust if lockfile is missing/out of sync
 RUN npm install
 
