@@ -13,7 +13,8 @@ WORKDIR /app
 # --- Frontend Build ---
 COPY frontend/package*.json ./frontend/
 WORKDIR /app/frontend
-RUN npm ci
+# Use npm install which is more robust if lockfile is missing/out of sync
+RUN npm install
 
 COPY frontend/ ./
 # Output: /app/frontend/out
