@@ -133,5 +133,16 @@ planout/
 └── docker-compose.yml  # Container orchestration
 ```
 
+## Deployment
+
+We have a detailed [Deployment Guide](deployment_guide.md) for deploying to Railway or other cloud providers.
+
+## Key Features
+
+### "Bring Your Own Key" (BYOK) AI
+Planout facilitates public demos by allowing individual users to provide their own **Google Gemini API Key**.
+- Keys are stored securely in the browser's `localStorage`.
+- The backend accepts these keys via headers to perform AI operations on behalf of the user.
+
 ## License
 [MIT](LICENSE)

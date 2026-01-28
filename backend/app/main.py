@@ -78,14 +78,15 @@ def update_plan(plan_id: str, plan_update: PlanUpdate, session: Session = Depend
     return plan
 
 from app.gemini import generate_plan_suggestions
+from fastapi import Header
 
 @app.post("/plans/{plan_id}/breakdown", response_model=PlanRead)
-def breakdown_plan(plan_id: str, session: Session = Depends(get_session)):
+def breakdown_plan(plan_id: str, session: Session = Depends(get_session), x_gemini_api_key: Optional[str] = Header(None)):
     plan = session.get(Plan, plan_id)
     if not plan:
         raise HTTPException(status_code=404, detail="Plan not found")
     
-    # Run logic
+    # Run logic (Heuristic does not usage AI, so no key needed yet)
     new_chunks = suggest_chunks(plan.description)
     
     # Schedule them
@@ -96,22 +97,20 @@ def breakdown_plan(plan_id: str, session: Session = Depends(get_session)):
         session.add(chunk)
     
     session.commit()
-    # Need to reload chunks relation
     session.refresh(plan)
-    # Or rely on eager loading if session keeps it, but safer to re-query if needed or trust lazy
-    # With PlanRead, it expects chunks list. 
-    # session.refresh(plan) might not load 'chunks' if it was accessed before or simple refresh.
-    # We can rely on returned object having 'chunks' property which is a list.
     return plan
 
 @app.post("/plans/{plan_id}/suggest")
-def suggest_plan_breakdown(plan_id: str, session: Session = Depends(get_session)):
+def suggest_plan_breakdown(plan_id: str, session: Session = Depends(get_session), x_gemini_api_key: Optional[str] = Header(None)):
     plan = session.get(Plan, plan_id)
     if not plan:
         raise HTTPException(status_code=404, detail="Plan not found")
     
-    suggestions = generate_plan_suggestions(plan.title, plan.description, plan.deadline)
-    return suggestions
+    try:
+        suggestions = generate_plan_suggestions(plan.title, plan.description, plan.deadline, api_key=x_gemini_api_key)
+        return suggestions
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 from app.gemini import generate_chunk_details
 
@@ -119,8 +118,11 @@ class ChunkSuggestionRequest(BaseModel):
     title: str
 
 @app.post("/chunks/suggest_details")
-def suggest_chunk_details_endpoint(req: ChunkSuggestionRequest):
-    return generate_chunk_details(req.title)
+def suggest_chunk_details_endpoint(req: ChunkSuggestionRequest, x_gemini_api_key: Optional[str] = Header(None)):
+    try:
+        return generate_chunk_details(req.title, api_key=x_gemini_api_key)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/plans/{plan_id}/chunks")
 def add_chunks(plan_id: str, chunks: List[Chunk], session: Session = Depends(get_session)):

@@ -1,28 +1,43 @@
 import os
 import json
 import google.generativeai as genai
-from typing import List, Dict
+from typing import List, Dict, Optional
 from dotenv import load_dotenv
 
-# Load env from .env file explicitly if needed, though uvicorn usually handles it if python-dotenv is installed?
-# Better safe to load it.
+# Load env from .env file explicitly if needed
 load_dotenv()
 
-API_KEY = os.getenv("GEMINI_API_KEY")
+DEFAULT_API_KEY = os.getenv("GEMINI_API_KEY")
 
-if API_KEY:
-    genai.configure(api_key=API_KEY)
+if DEFAULT_API_KEY:
+    genai.configure(api_key=DEFAULT_API_KEY)
 
 # Models to try in order of preference (Free/Fast -> Paid/Powerful)
-MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"] # fallback to older names just in case, but prioritize verified ones
+MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"]
 
 def is_configured() -> bool:
-    return bool(API_KEY)
+    return bool(DEFAULT_API_KEY)
 
-def _generate_with_retry(prompt: str) -> str:
+def _generate_with_retry(prompt: str, api_key: Optional[str] = None) -> str:
+    # If a specific key is provided for this request, configure it
+    # Note: genai.configure is global. In high concurrency async apps this might be race-condition prone.
+    # Ideally we'd pass api_key to GenerativeModel constructor if supported, or use client instance.
+    # The current google-generativeai lib is a bit global-state heavy, but for this prototype it's likely fine.
+    # Alternatively, we can instantiate a client if the library supports it (v0.3+ does).
+    
+    if api_key:
+        genai.configure(api_key=api_key)
+    elif DEFAULT_API_KEY:
+         # Ensure we revert/use default if no specific key passed (though global state might persist prev key)
+         # It's safer to just configure if we have a default.
+         genai.configure(api_key=DEFAULT_API_KEY)
+    
+    # If no key at all
+    if not api_key and not DEFAULT_API_KEY:
+        raise Exception("No Gemini API Key provided or configured.")
+
     for model_name in MODELS:
         try:
-            # print(f"Trying Gemini Model: {model_name}") # Optional logging
             model = genai.GenerativeModel(model_name)
             response = model.generate_content(prompt)
             if response.text:
@@ -32,9 +47,7 @@ def _generate_with_retry(prompt: str) -> str:
             continue
     raise Exception("All Gemini models failed.")
 
-def generate_plan_suggestions(plan_title: str, plan_description: str, plan_deadline=None) -> List[dict]:
-    if not API_KEY:
-        raise Exception("Gemini API Key not configured")
+def generate_plan_suggestions(plan_title: str, plan_description: str, plan_deadline=None, api_key: Optional[str] = None) -> List[dict]:
     
     context = ""
     if plan_deadline:
@@ -61,7 +74,7 @@ def generate_plan_suggestions(plan_title: str, plan_description: str, plan_deadl
     """
 
     try:
-        text = _generate_with_retry(prompt)
+        text = _generate_with_retry(prompt, api_key=api_key)
         text = text.replace("```json", "").replace("```", "").strip()
         tasks = json.loads(text)
         
@@ -88,16 +101,9 @@ def generate_plan_suggestions(plan_title: str, plan_description: str, plan_deadl
                     multiplier = 1
                     if freq == 'Weekly': multiplier = 7
                     elif freq == 'Monthly': multiplier = 30
-                    elif freq == 'Once': multiplier = 1 # Once implies 1 session usually, but if total > session, maybe spread out? Assume 1 day for 'Once' or just deadline = now + days needed to work it consecutively? 
-                    # If 'Once' and 20 hours work, and 1 hour session -> 20 sessions. 
-                    # If 'Once', it usually means "Do it one time". But if it takes 20 hours, it's a big task. 
-                    # Let's treat 'Once' as 'Daily' intensity for completion? 
-                    # Or just: 
+                    elif freq == 'Once': multiplier = 1 
                     
                     total_days = sessions_needed * multiplier
-                    
-                    # Cap generic deadlines reasonably (e.g. not 10 years away)
-                    # if total_days > 365 * 2: total_days = 365
                     
                     calc_deadline = now + timedelta(days=int(total_days))
                     task['deadline'] = calc_deadline.strftime("%Y-%m-%d")
@@ -109,10 +115,7 @@ def generate_plan_suggestions(plan_title: str, plan_description: str, plan_deadl
         print(f"Gemini Error (All models): {e}")
         return []
 
-def generate_chunk_details(chunk_title: str) -> dict:
-    if not API_KEY:
-        raise Exception("Gemini API Key not configured")
-
+def generate_chunk_details(chunk_title: str, api_key: Optional[str] = None) -> dict:
     prompt = f"""
     Suggest optimal execution details for a task titled: "{chunk_title}".
     Return ONLY a raw JSON object. No markdown.
@@ -123,7 +126,7 @@ def generate_chunk_details(chunk_title: str) -> dict:
     """
 
     try:
-        text = _generate_with_retry(prompt)
+        text = _generate_with_retry(prompt, api_key=api_key)
         text = text.replace("```json", "").replace("```", "").strip()
         data = json.loads(text)
         return data
