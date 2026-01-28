@@ -26,11 +26,13 @@ def _generate_with_retry(prompt: str, api_key: Optional[str] = None) -> str:
     # Alternatively, we can instantiate a client if the library supports it (v0.3+ does).
     
     if api_key:
+        print(f"DEBUG: Using provided API Key (Length: {len(api_key)})")
         genai.configure(api_key=api_key)
     elif DEFAULT_API_KEY:
-         # Ensure we revert/use default if no specific key passed (though global state might persist prev key)
-         # It's safer to just configure if we have a default.
+         print(f"DEBUG: Using DEFAULT API Key from Env (Length: {len(DEFAULT_API_KEY)})")
          genai.configure(api_key=DEFAULT_API_KEY)
+    else:
+         print("DEBUG: No API Key found in args or env.")
     
     # If no key at all
     if not api_key and not DEFAULT_API_KEY:

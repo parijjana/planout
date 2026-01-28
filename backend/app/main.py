@@ -71,6 +71,8 @@ def update_plan(plan_id: str, plan_update: PlanUpdate, session: Session = Depend
         plan.description = plan_update.description
     if plan_update.color is not None:
         plan.color = plan_update.color
+    if plan_update.deadline is not None:
+        plan.deadline = plan_update.deadline
         
     session.add(plan)
     session.commit()
@@ -293,3 +295,27 @@ def delete_plan(plan_id: str, session: Session = Depends(get_session)):
     session.delete(plan)
     session.commit()
     return {"message": "Plan deleted"}
+
+# --- Static File Serving (for Deployment) ---
+import os
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+# Adjust path: backend/app/main.py -> backend/.. -> frontend/out
+frontend_dist = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "out")
+
+if os.path.exists(frontend_dist):
+    app.mount("/_next", StaticFiles(directory=os.path.join(frontend_dist, "_next")), name="next-static")
+    # We can mount other root files if needed, or just rely on fallback
+    
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        # API routes are already handled above because they are defined first (FastAPI Check).
+        # We check if file exists in dist
+        possible_path = os.path.join(frontend_dist, full_path)
+        if os.path.isfile(possible_path):
+            return FileResponse(possible_path)
+        
+        # Fallback to index.html for SPA
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
+
