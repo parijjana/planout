@@ -57,7 +57,7 @@ export default function CreatePlanModal({ onClose, onCreated, onOpenSettings, ex
         // Check AI Status (Backend + LocalStorage)
         const localKey = localStorage.getItem('gemini_api_key');
 
-        fetch('http://localhost:8000/config/ai-status')
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/config/ai-status`)
             .then(res => res.json())
             .then(data => {
                 // Configured if backend has key OR frontend has key
@@ -147,13 +147,13 @@ export default function CreatePlanModal({ onClose, onCreated, onOpenSettings, ex
         if (!tempPlanId) return;
         setLoading(true);
         try {
-            await fetch(`http://localhost:8000/plans/${tempPlanId}`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/plans/${tempPlanId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ deadline: finalDeadline })
             });
 
-            await fetch(`http://localhost:8000/plans/${tempPlanId}/chunks`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/plans/${tempPlanId}/chunks`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(finalTasks.map(s => ({

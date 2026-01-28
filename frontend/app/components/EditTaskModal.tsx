@@ -25,7 +25,7 @@ export default function EditTaskModal({ chunk, onClose, onSave, onDelete }: Edit
 
     useEffect(() => {
         // Check AI Status
-        fetch('http://localhost:8000/config/ai-status')
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/config/ai-status`)
             .then(res => res.json())
             .then(data => setAiConfigured(data.configured))
             .catch(err => console.error("AI Status Check Failed", err));

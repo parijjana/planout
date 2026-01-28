@@ -205,7 +205,7 @@ export default function Home() {
             // Actually the effect runs on viewPlanId change, but here ID is same.
             // Let's rely on effect re-running if we simple invoke a re-fetch or use a refresh flag.
             // For now, simpler:
-            fetch('http://localhost:8000/plans').then(r => r.json()).then(setPlans);
+            fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/plans`).then(r => r.json()).then(setPlans);
           }}
         />
       )}
