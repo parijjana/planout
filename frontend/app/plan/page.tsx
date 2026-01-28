@@ -25,7 +25,7 @@ function PlanViewContent() {
 
     const fetchPlan = async () => {
         if (!id) return;
-        const res = await fetch(`http://localhost:8000/plans/${id}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/plans/${id}`);
         if (res.ok) {
             const data = await res.json();
             setPlan(data);
@@ -38,7 +38,7 @@ function PlanViewContent() {
 
     const triggerBreakdown = async () => {
         if (!plan || !id) return;
-        const res = await fetch(`http://localhost:8000/plans/${id}/breakdown`, { method: 'POST' });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/plans/${id}/breakdown`, { method: 'POST' });
         if (res.ok) {
             const data = await res.json();
             setPlan(data);
@@ -49,7 +49,7 @@ function PlanViewContent() {
         if (!id) return;
         setLoadingAI(true);
         try {
-            const res = await fetch(`http://localhost:8000/plans/${id}/suggest`, { method: 'POST' });
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/plans/${id}/suggest`, { method: 'POST' });
             if (res.ok) {
                 const data: any[] = await res.json();
                 const mapped: Chunk[] = data.map(d => ({
@@ -83,7 +83,7 @@ function PlanViewContent() {
     const applySuggestions = async () => {
         if (!id) return;
         const toAdd = suggestions.filter((_, i) => selectedIndices.has(i));
-        await fetch(`http://localhost:8000/plans/${id}/chunks`, {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/plans/${id}/chunks`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(toAdd)
@@ -110,7 +110,7 @@ function PlanViewContent() {
         }
 
         if (id) {
-            await fetch(`http://localhost:8000/plans/${id}/chunks/${chunkId}`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/plans/${id}/chunks/${chunkId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status })
@@ -130,7 +130,7 @@ function PlanViewContent() {
         const updatedChunks = plan.chunks.map(c => c.id === chunkId ? { ...c, ...updates } : c);
         setPlan({ ...plan, chunks: updatedChunks });
 
-        await fetch(`http://localhost:8000/plans/${id}/chunks/${chunkId}`, {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/plans/${id}/chunks/${chunkId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updates)

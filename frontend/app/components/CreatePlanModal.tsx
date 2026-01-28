@@ -90,7 +90,7 @@ export default function CreatePlanModal({ onClose, onCreated, onOpenSettings, ex
         // ... (rest of function unmodified logic start)
         try {
             // 1. Create Plan
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/plans`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/plans`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -107,7 +107,7 @@ export default function CreatePlanModal({ onClose, onCreated, onOpenSettings, ex
                 if (withAI) {
                     // 2. Fetch Suggestions
                     const apiKey = localStorage.getItem('gemini_api_key') || '';
-                    const aiRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/plans/${planId}/suggest`, {
+                    const aiRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/plans/${planId}/suggest`, {
                         method: 'POST',
                         headers: {
                             'x-gemini-api-key': apiKey

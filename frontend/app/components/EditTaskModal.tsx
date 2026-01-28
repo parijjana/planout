@@ -74,7 +74,7 @@ export default function EditTaskModal({ chunk, onClose, onSave, onDelete }: Edit
         setSaving(true);
         try {
             const apiKey = localStorage.getItem('gemini_api_key') || '';
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/chunks/suggest_details`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/chunks/suggest_details`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-gemini-api-key': apiKey },
                 body: JSON.stringify({ title })

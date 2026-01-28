@@ -43,7 +43,7 @@ export default function PlanManager({ planId, initialFocusTaskId, initialViewMod
     const taskRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
     // Define API_URL once
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
     const fetchPlan = async () => {
         if (!planId) return;

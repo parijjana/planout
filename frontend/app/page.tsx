@@ -41,7 +41,7 @@ export default function Home() {
   const [focusTaskId, setFocusTaskId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/plans`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/plans`)
       .then(async res => {
         if (!res.ok) throw new Error(`Error: ${res.status}`);
         return res.json();
@@ -85,8 +85,8 @@ export default function Home() {
   }
 
   const handleDeletePlan = async (id: string) => {
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/plans/${id}`, { method: 'DELETE' });
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/plans`);
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/plans/${id}`, { method: 'DELETE' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/plans`);
     const data = await res.json();
     setPlans(data);
   };
